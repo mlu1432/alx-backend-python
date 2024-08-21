@@ -3,12 +3,15 @@
 1-async_comprehension.py
 
 This module contains a coroutine `async_comprehension` that collects 10 random
-numbers from the `async_generator` coroutine using an async comprehension.
+numbers from the `0-async_generator` coroutine using an async comprehension.
 """
 
 from typing import List
 import asyncio
-from async_generator import async_generator
+import importlib
+
+# Dynamically import the module to handle unconventional naming
+async_generator = importlib.import_module('0-async_generator').async_generator
 
 
 async def async_comprehension() -> List[float]:
