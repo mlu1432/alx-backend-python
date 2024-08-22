@@ -8,7 +8,10 @@ of executing `async_comprehension` four times in parallel.
 
 import asyncio
 import time
-from async_comprehension import async_comprehension
+import importlib
+
+# Dynamically import the module to handle unconventional naming
+async_comprehension = importlib.import_module('1-async_comprehension').async_comprehension
 
 
 async def measure_runtime() -> float:
