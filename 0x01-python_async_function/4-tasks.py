@@ -2,13 +2,13 @@
 """
 4-tasks.py
 
-This module contains a function `task_wait_n` that spawns multiple `task_wait_random`
+module contains a function `task_wait_n` that spawns multiple `task_wait_random
 tasks concurrently and returns a list of the delays in ascending order.
 """
 
 import asyncio
 from typing import List
-from 3_tasks import task_wait_random
+from tasks import task_wait_random
 
 
 async def task_wait_n(n: int, max_delay: int) -> List[float]:
