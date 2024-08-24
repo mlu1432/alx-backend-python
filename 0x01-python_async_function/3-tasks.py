@@ -7,7 +7,10 @@ object for the `wait_random` coroutine.
 """
 
 import asyncio
-from basic_async_syntax import wait_random
+import importlib
+
+# Dynamically import wait_random from the 0-basic_async_syntax module
+wait_random = importlib.import_module('0-basic_async_syntax').wait_random
 
 
 def task_wait_random(max_delay: int) -> asyncio.Task:
