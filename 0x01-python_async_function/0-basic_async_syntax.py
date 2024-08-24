@@ -2,7 +2,7 @@
 """
 0-basic_async_syntax.py
 
-This module contains a single coroutine `wait_random` that waits for a random
+This module contains a coroutine `wait_random` that waits for a random
 delay between 0 and max_delay seconds and returns the delay time.
 """
 
