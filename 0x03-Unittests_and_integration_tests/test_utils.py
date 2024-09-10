@@ -50,11 +50,17 @@ class TestAccessNestedMap(unittest.TestCase):
 
         :param nested_map: Dictionary containing nested elements.
         :param path: Tuple of keys representing the path to the nested value.
-        :param exception: expected exception to be raised by access_nested_map
+        :param exception: Expected exception to be raised by access_nested_map
         :return: None
         """
-        with self.assertRaises(exception):
+        with self.assertRaises(exception) as context:
             access_nested_map(nested_map, path)
+
+        # Assert the exception message contains the key inside quotes
+        expected_message = repr(
+            path[-1]
+        )  # Use repr() to include quotes in the expected message
+        self.assertEqual(str(context.exception), expected_message)
 
 
 if __name__ == "__main__":
