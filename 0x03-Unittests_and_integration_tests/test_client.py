@@ -2,8 +2,9 @@
 """
 Unit tests for the GithubOrgClient class in the client.py module.
 
-These tests ensure that the org method and _public_repos_url method behave
-as expected, using mocks to avoid making real HTTP requests.
+These tests ensure that the org, _public_repos_url,
+and public_repos methods behave as expected
+using mocks to avoid making real HTTP requests.
 """
 
 import unittest
@@ -14,6 +15,13 @@ from client import GithubOrgClient
 class TestGithubOrgClient(unittest.TestCase):
     """
     Unit tests for the GithubOrgClient class.
+    
+    This class contains tests for:
+    - org: Test that the org method calls get_json correctly.
+    - _public_repos_url: Test that the _public_repos_url method
+    returns the correct URL.
+    - public_repos: Test that the public_repos method returns
+    the correct repository names.
     """
 
     @patch('client.get_json', return_value={"login": "mocked_org"})
@@ -55,6 +63,42 @@ class TestGithubOrgClient(unittest.TestCase):
 
         # Assert that the result is the expected repos_url from the mocked org property
         self.assertEqual(result, "https://api.github.com/orgs/google/repos")
+
+    @patch('client.get_json')
+    def test_public_repos(self, mock_get_json: unittest.mock.Mock) -> None:
+        """
+        Test that GithubOrgClient.public_repos returns the
+        expected list of repositories and that the
+        _public_repos_url and get_json methods are called correctly.
+
+        :param mock_get_json: The mock object for get_json.
+        """
+        # Define a fake list of repos to be returned by get_json
+        mock_get_json.return_value = [
+            {"name": "repo1"},
+            {"name": "repo2"},
+            {"name": "repo3"}
+        ]
+
+        # Mock _public_repos_url to return a custom URL
+        with patch('client.GithubOrgClient._public_repos_url',
+                   new_callable=PropertyMock,
+                   return_value="https://api.github.com/orgs/google/repos") as mock_repos_url:
+
+            # Create an instance of GithubOrgClient
+            client = GithubOrgClient("google")
+
+            # Call the public_repos method
+            repos = client.public_repos()
+
+            # Assert the list of repos returned by public_repos matches the mock data
+            self.assertEqual(repos, ["repo1", "repo2", "repo3"])
+
+            # Assert that _public_repos_url was called once
+            mock_repos_url.assert_called_once()
+
+            # Assert that get_json was called once with the correct URL
+            mock_get_json.assert_called_once_with("https://api.github.com/orgs/google/repos")
 
 
 if __name__ == "__main__":
