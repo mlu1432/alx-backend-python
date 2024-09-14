@@ -9,13 +9,14 @@ using mocks to avoid making real HTTP requests.
 
 import unittest
 from unittest.mock import patch, PropertyMock
+from parameterized import parameterized
 from client import GithubOrgClient
 
 
 class TestGithubOrgClient(unittest.TestCase):
     """
     Unit tests for the GithubOrgClient class.
-    
+
     This class contains tests for:
     - org: Test that the org method calls get_json correctly.
     - _public_repos_url: Test that the _public_repos_url method
@@ -99,6 +100,27 @@ class TestGithubOrgClient(unittest.TestCase):
 
             # Assert that get_json was called once with the correct URL
             mock_get_json.assert_called_once_with("https://api.github.com/orgs/google/repos")
+
+    @parameterized.expand([
+        ({"license": {"key": "my_license"}}, "my_license", True),
+        ({"license": {"key": "other_license"}}, "my_license", False),
+        ({}, "my_license", False),  # Case where license key is missing in the repo
+    ])
+    def test_has_license(self, repo: dict, license_key: str, expected: bool) -> None:
+        """
+        Test that GithubOrgClient.has_license returns the correct boolean value
+        depending on the repository's license.
+
+        :param repo: A dictionary representing the repository data.
+        :param license_key: The license key to check in the repository.
+        :param expected: The expected boolean result.
+        """
+        # Create an instance of GithubOrgClient
+        client = GithubOrgClient("google")
+
+        # Call the has_license method and assert the result
+        result = client.has_license(repo, license_key)
+        self.assertEqual(result, expected)
 
 
 if __name__ == "__main__":
