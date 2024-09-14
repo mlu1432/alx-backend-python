@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """
 Integration tests for the GithubOrgClient class in the client.py module.
+
+These tests ensure that the methods in GithubOrgClient interact correctly
+with external services (mocked for testing).
 """
 
 import unittest
@@ -12,26 +15,21 @@ from fixtures import TEST_PAYLOAD
 class TestIntegrationGithubOrgClient(unittest.TestCase):
     """
     Integration tests for the GithubOrgClient class.
-
-    These tests ensure the interaction between multiple methods in the class
-    works as expected, including calls to
-    external services like the GitHub API
     """
 
     @patch('client.get_json', side_effect=[
         {"repos_url": "https://api.github.com/orgs/google/repos"},
         TEST_PAYLOAD[0][1],  # Second API response (list of repos)
     ])
-    def test_public_repos_integration(self, mock_get_json):
+    def test_public_repos_integration(self, mock_get_json) -> None:
         """
         Test the public_repos method in an integration test scenario.
 
-        Verifies that the public_repos method correctly retrieves and
-        returns the list of repositories for the organization using
-        mocked API responses.
+        Verifies that the public_repos method correctly retrieves and returns
+        the list of repositories for the organization
+        using mocked API responses.
 
         :param mock_get_json: The mock object that simulates API responses.
-        :return: None
         """
         client = GithubOrgClient("google")
         repos = client.public_repos()
@@ -47,16 +45,15 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         {"repos_url": "https://api.github.com/orgs/google/repos"},
         TEST_PAYLOAD[0][1]
     ])
-    def test_public_repos_with_license_integration(self, mock_get_json):
+    def test_public_repos_with_license_integration(self, mock_get_json) -> None:
         """
-        Test public_repos method with license
-        filtering in an integration scenario
+        Test public_repos method with license filtering
+        in an integration scenario.
 
         This test checks whether the public_repos method returns repositories
         that match a given license using mocked API responses.
 
         :param mock_get_json: The mock object that simulates API responses.
-        :return: None
         """
         client = GithubOrgClient("google")
         repos = client.public_repos(license="apache-2.0")
@@ -65,5 +62,5 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         self.assertEqual(mock_get_json.call_count, 2)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
