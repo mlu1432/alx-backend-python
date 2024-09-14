@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Integration tests for the GithubOrgClient class in the client.py module.
+Unit tests for the GithubOrgClient class in the client.py module.
 
 These tests ensure that the org, _public_repos_url,
 and public_repos methods behave as expected
@@ -8,57 +8,60 @@ using mocks to avoid making real HTTP requests.
 """
 
 import unittest
-from unittest.mock import patch, PropertyMock, Mock
+from unittest.mock import patch, PropertyMock
 from parameterized import parameterized, parameterized_class
 from client import GithubOrgClient
 from fixtures import TEST_PAYLOAD
 
 
 @parameterized_class([
-    {
-        'org_payload': TEST_PAYLOAD[0][0],
-        'repos_payload': TEST_PAYLOAD[0][1],
-        'expected_repos': TEST_PAYLOAD[0][2],
-        'apache2_repos': TEST_PAYLOAD[0][3],
-    },
+    {"org_payload": TEST_PAYLOAD[0][0], "repos_payload": TEST_PAYLOAD[0][1],
+     "expected_repos": TEST_PAYLOAD[0][2], "apache2_repos": TEST_PAYLOAD[0][3]},
 ])
 class TestIntegrationGithubOrgClient(unittest.TestCase):
     """
-    Integration tests for GithubOrgClient class.
-
-    Tests interaction between multiple methods in the class, ensuring
-    proper behavior with external services like the GitHub API.
+    Integration tests for the GithubOrgClient class.
+    These tests ensure the public_repos method works with fixtures.
     """
 
     @classmethod
-    def setUpClass(cls) -> None:
-        """Set up the patcher for requests.get."""
-        cls.get_patcher = patch('requests.get', side_effect=cls.get_json_mock)
-        cls.mock_get = cls.get_patcher.start()
+    def setUpClass(cls):
+        """
+        Set up the mock for requests.get to return the appropriate fixture data
+        """
+        cls.get_patcher = patch('requests.get', side_effect=cls.mocked_requests_get)
+        cls.get_patcher.start()
 
     @classmethod
-    def tearDownClass(cls) -> None:
-        """Stop the patcher for requests.get after tests complete."""
+    def tearDownClass(cls):
+        """
+        Stop the patcher for requests.get.
+        """
         cls.get_patcher.stop()
 
     @staticmethod
-    def get_json_mock(url):
+    def mocked_requests_get(url):
         """
-        Mock for requests.get().json() to return different fixtures based on URL.
+        A static method to mock requests.get() behavior based on the URL.
+        It will return mock response objects with JSON data.
         """
-        mock_response = Mock()
+        class MockResponse:
+            def __init__(self, json_data):
+                self._json_data = json_data
+
+            def json(self):
+                return self._json_data
+
         if url == "https://api.github.com/orgs/google":
-            mock_response.json.return_value = TEST_PAYLOAD[0][0]
+            return MockResponse(TEST_PAYLOAD[0][0])
         elif url == "https://api.github.com/orgs/google/repos":
-            mock_response.json.return_value = TEST_PAYLOAD[0][1]
-        return mock_response
+            return MockResponse(TEST_PAYLOAD[0][1])
+        return MockResponse(None)
 
     def test_public_repos(self):
         """
-        Test public_repos method.
-
-        Ensures that public_repos method returns the correct list
-        of repositories using mocked API responses.
+        Test GithubOrgClient.public_repos to ensure it returns
+        the expected repository names.
         """
         client = GithubOrgClient("google")
         repos = client.public_repos()
@@ -66,10 +69,8 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
 
     def test_public_repos_with_license(self):
         """
-        Test public_repos method with license filtering.
-
-        Ensures that repositories with a specific license are returned correctly
-        using mocked API responses.
+        Test the public_repos method when filtering by
+        license (e.g., "apache-2.0").
         """
         client = GithubOrgClient("google")
         repos = client.public_repos(license="apache-2.0")
